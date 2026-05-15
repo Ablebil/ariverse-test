@@ -111,3 +111,57 @@ export async function getMe(userId: string) {
 
   return user;
 }
+
+export async function refresh(rawToken: string | undefined) {
+  if (!rawToken) {
+    throw new AuthError("Refresh token tidak ditemukan.", 401);
+  }
+
+  const tokenHash = hashRefreshToken(rawToken);
+  const storedToken = await userRepository.findRefreshToken(tokenHash);
+
+  if (!storedToken || !storedToken.user) {
+    throw new AuthError(
+      "Refresh token tidak valid atau sudah kadaluarsa.",
+      401
+    );
+  }
+
+  if (storedToken.revoked) {
+    throw new AuthError(
+      "Refresh token tidak valid atau sudah kadaluarsa.",
+      401
+    );
+  }
+
+  if (storedToken.expiresAt < new Date()) {
+    throw new AuthError(
+      "Refresh token tidak valid atau sudah kadaluarsa.",
+      401
+    );
+  }
+
+  await userRepository.revokeRefreshToken(tokenHash);
+
+  const nextRefreshToken = generateRefreshToken();
+  const nextRefreshTokenHash = hashRefreshToken(nextRefreshToken);
+  const nextRefreshTokenExpiresAt = getRefreshTokenExpiry();
+
+  await userRepository.createRefreshToken({
+    userId: storedToken.userId,
+    tokenHash: nextRefreshTokenHash,
+    expiresAt: nextRefreshTokenExpiresAt,
+  });
+
+  const accessToken = signAccessToken({
+    sub: storedToken.user.id,
+    email: storedToken.user.email,
+    role: storedToken.user.role,
+  });
+
+  return {
+    accessToken,
+    refreshToken: nextRefreshToken,
+    refreshTokenExpiresAt: nextRefreshTokenExpiresAt,
+  };
+}

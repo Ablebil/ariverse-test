@@ -26,3 +26,17 @@ export function createRefreshToken(
 ) {
   return db.refreshToken.create({ data });
 }
+
+export function findRefreshToken(tokenHash: string) {
+  return db.refreshToken.findUnique({
+    where: { tokenHash },
+    include: { user: { select: userSelect } },
+  });
+}
+
+export function revokeRefreshToken(tokenHash: string) {
+  return db.refreshToken.updateMany({
+    where: { tokenHash },
+    data: { revoked: true },
+  });
+}
