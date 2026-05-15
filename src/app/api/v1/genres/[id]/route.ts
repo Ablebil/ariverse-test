@@ -16,18 +16,10 @@ import {
 } from "@/lib/response";
 
 interface RouteParams {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
-const idSchema = z.uuid("ID tidak valid.");
-
-function resolveId(req: NextRequest, params: RouteParams["params"]) {
-  if (params?.id) return params.id;
-  const segments = req.nextUrl.pathname.split("/").filter(Boolean);
-  return segments[segments.length - 1] ?? "";
-}
+const idSchema = z.string().uuid("ID tidak valid.");
 
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   const auth = requireAdmin(req);
@@ -35,7 +27,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     return auth.forbidden ? forbiddenResponse() : unauthorizedResponse();
   }
 
-  const idParsed = idSchema.safeParse(resolveId(req, params));
+  const { id } = await params;
+  const idParsed = idSchema.safeParse(id);
   if (!idParsed.success) {
     return zodErrorResponse(idParsed.error);
   }
@@ -63,7 +56,8 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     return auth.forbidden ? forbiddenResponse() : unauthorizedResponse();
   }
 
-  const idParsed = idSchema.safeParse(resolveId(req, params));
+  const { id } = await params;
+  const idParsed = idSchema.safeParse(id);
   if (!idParsed.success) {
     return zodErrorResponse(idParsed.error);
   }
