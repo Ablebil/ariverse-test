@@ -16,14 +16,13 @@ import {
 } from "@/lib/response";
 
 interface RouteParams {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   try {
-    const game = await getGameBySlug(params.slug);
+    const { slug } = await params;
+    const game = await getGameBySlug(slug);
     return successResponse(game, "Game berhasil diambil.");
   } catch (error) {
     if (error instanceof GameError) {
@@ -46,7 +45,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       return zodErrorResponse(parsed.error);
     }
 
-    const game = await updateGame(params.slug, parsed.data);
+    const { slug } = await params;
+    const game = await updateGame(slug, parsed.data);
     return successResponse(game, "Game berhasil diperbarui.");
   } catch (error) {
     if (error instanceof GameError) {
@@ -63,7 +63,8 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    await deleteGame(params.slug);
+    const { slug } = await params;
+    await deleteGame(slug);
     return successResponse(null, "Game berhasil dihapus.");
   } catch (error) {
     if (error instanceof GameError) {
