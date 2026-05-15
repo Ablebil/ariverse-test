@@ -71,7 +71,13 @@ const GAMES = [
       "An open-world action RPG set in the Lands Between, crafted in collaboration with George R.R. Martin.",
     longDescription:
       "Elden Ring thrusts players into the Lands Between, a vast open world filled with ancient ruins, towering fortresses, and grotesque creatures born from a shattered age. As a Tarnished, you must collect fragments of the Elden Ring and become the Elden Lord.\n\nThe game builds on FromSoftware's signature challenging combat, adding mounted exploration, stealth mechanics, and a seamless open world that encourages experimentation. Every corner of the map hides lore, weapons, and surprises.\n\nFrom devastating bosses to hidden underground kingdoms, Elden Ring rewards curiosity and perseverance in equal measure. Its world-building, co-written with George R.R. Martin, gives the game a mythological depth unlike anything the studio has made before.",
-    tags: ["open-world", "souls-like", "dark-fantasy", "challenging", "multiplayer"],
+    tags: [
+      "open-world",
+      "souls-like",
+      "dark-fantasy",
+      "challenging",
+      "multiplayer",
+    ],
     featured: true,
     genres: ["Action", "RPG"],
     platforms: ["PC", "PlayStation 5", "PlayStation 4", "Xbox Series X"],
@@ -87,7 +93,13 @@ const GAMES = [
       "Kratos and Atreus journey across the Nine Realms as Fimbulwinter heralds the onset of Ragnarok.",
     longDescription:
       "God of War Ragnarok continues the saga of Kratos and his son Atreus as they navigate the political turmoil of the Norse realms. The threat of Ragnarok looms, and alliances both new and fragile must be forged to survive the coming apocalypse.\n\nSanta Monica Studio expands the combat system with new weapon abilities, shield stances, and enemy types spread across nine distinct realms, each with unique environments and mythology. The bond between father and son deepens in unexpected ways, driving a story filled with loss, growth, and sacrifice.\n\nRagnarok stands as one of the most polished action-adventure games ever made, blending blockbuster spectacle with genuine emotional depth and endlessly satisfying gameplay.",
-    tags: ["action-adventure", "mythology", "story-driven", "combat", "single-player"],
+    tags: [
+      "action-adventure",
+      "mythology",
+      "story-driven",
+      "combat",
+      "single-player",
+    ],
     featured: true,
     genres: ["Action", "Adventure"],
     platforms: ["PlayStation 5", "PlayStation 4"],
@@ -151,7 +163,13 @@ const GAMES = [
       "Ethan Winters searches for his kidnapped daughter in a mysterious European village ruled by powerful lords.",
     longDescription:
       "Resident Evil Village continues the story of Ethan Winters, dropping him into a snow-blanketed village crawling with werewolves, vampires, and far darker horrors. The game blends survival horror with explosive action across a series of unforgettable set pieces.\n\nEach of the four lords controls a domain with its own visual identity and horror subgenre, keeping the pacing varied and the tension consistently high. Resource management, crafting, and the merchant system encourage exploration of every shadowy corner.\n\nThe game is a love letter to classic horror while pushing the series forward. Its climax and endgame revelations set up a new chapter for the franchise while delivering one of the most satisfying entries in the Resident Evil saga.",
-    tags: ["survival-horror", "first-person", "atmospheric", "action", "gothic"],
+    tags: [
+      "survival-horror",
+      "first-person",
+      "atmospheric",
+      "action",
+      "gothic",
+    ],
     featured: false,
     genres: ["Horror", "Action"],
     platforms: ["PC", "PlayStation 5", "PlayStation 4", "Xbox Series X"],
@@ -295,7 +313,13 @@ const GAMES = [
       "A real-time strategy classic returns with eight civilizations across four historical campaigns.",
     longDescription:
       "Age of Empires IV marks the long-awaited return of the iconic RTS franchise, bringing eight unique civilizations with asymmetric design to life across four campaign storylines. Each civilization plays differently, from the Mongols' nomadic mobility to the English longbow dominance.\n\nThe campaign missions are presented with real historical documentary footage bridging each battle, adding educational context that sets Age of Empires IV apart from genre contemporaries. Multiplayer offers ranked and casual modes across a variety of maps and win conditions.\n\nRelic Entertainment balanced accessibility for new players with deep strategic complexity for veterans. Regular content updates and new civilization additions have continued to grow the game since launch.",
-    tags: ["real-time-strategy", "historical", "multiplayer", "building", "warfare"],
+    tags: [
+      "real-time-strategy",
+      "historical",
+      "multiplayer",
+      "building",
+      "warfare",
+    ],
     featured: false,
     genres: ["Strategy"],
     platforms: ["PC"],
@@ -375,7 +399,13 @@ const GAMES = [
       "A run-and-gun game inspired by 1930s cartoons, with hand-drawn animation and punishing boss fights.",
     longDescription:
       "Cuphead follows Cuphead and his brother Mugman as they attempt to repay a debt to the Devil by collecting the soul contracts of runaway debtors. Every level is a boss fight or gauntlet, each with multiple phases and attack patterns to master.\n\nThe visual presentation is the game's defining feature — every frame is hand-drawn and hand-inked in the style of Fleischer Studios cartoons from the 1930s. The jazz and big band soundtrack is recorded with period-authentic instruments. Together they create an experience unlike anything else in gaming.\n\nDespite its charming appearance, Cuphead is demanding at its core. Deaths are frequent and lessons are hard-earned, but the satisfaction of finally clearing a boss is immense. The Delicious Last Course DLC adds another island of content with Ms. Chalice.",
-    tags: ["run-and-gun", "boss-rush", "hand-drawn", "challenging", "1930s-animation"],
+    tags: [
+      "run-and-gun",
+      "boss-rush",
+      "hand-drawn",
+      "challenging",
+      "1930s-animation",
+    ],
     featured: false,
     genres: ["Action", "Adventure"],
     platforms: ["PC", "Xbox One", "Nintendo Switch", "PlayStation 4"],
@@ -407,7 +437,13 @@ const GAMES = [
       "Build an empire to stand the test of time in the acclaimed 4X turn-based strategy series.",
     longDescription:
       "Civilization VI tasks you with guiding a civilization from the ancient era to the information age, building cities, researching technologies, forging alliances, and waging wars to achieve one of several victory conditions. The Unstacked Cities system fundamentally changes how settlements are planned and grown.\n\nEach of the 40-plus leaders plays uniquely, with distinct agendas, bonuses, and units that encourage diverse playstyles. The two major expansions, Rise and Fall and Gathering Storm, add seasons, climate change, governors, loyalty systems, and the full spectrum of natural disasters.\n\nCivilization VI is endlessly replayable by design. No two games are the same, and the tension of a late-game lead threatened by a rising rival civilization is a feeling it delivers consistently across hundreds of hours.",
-    tags: ["turn-based-strategy", "4x", "building", "historical", "multiplayer"],
+    tags: [
+      "turn-based-strategy",
+      "4x",
+      "building",
+      "historical",
+      "multiplayer",
+    ],
     featured: false,
     genres: ["Strategy", "Simulation"],
     platforms: ["PC", "PlayStation 4", "Nintendo Switch", "iOS", "Android"],
@@ -506,7 +542,13 @@ const GAMES = [
     tags: ["fps", "hero-shooter", "team-based", "online", "competitive"],
     featured: false,
     genres: ["Action", "Sports"],
-    platforms: ["PC", "PlayStation 5", "PlayStation 4", "Xbox Series X", "Nintendo Switch"],
+    platforms: [
+      "PC",
+      "PlayStation 5",
+      "PlayStation 4",
+      "Xbox Series X",
+      "Nintendo Switch",
+    ],
   },
   {
     title: "Forza Horizon 4",
