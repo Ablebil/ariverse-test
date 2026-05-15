@@ -21,7 +21,13 @@ interface RouteParams {
   };
 }
 
-const idSchema = z.string().uuid("ID tidak valid.");
+const idSchema = z.uuid("ID tidak valid.");
+
+function resolveId(req: NextRequest, params: RouteParams["params"]) {
+  if (params?.id) return params.id;
+  const segments = req.nextUrl.pathname.split("/").filter(Boolean);
+  return segments[segments.length - 1] ?? "";
+}
 
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   const auth = requireAdmin(req);
@@ -29,7 +35,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     return auth.forbidden ? forbiddenResponse() : unauthorizedResponse();
   }
 
-  const idParsed = idSchema.safeParse(params.id);
+  const idParsed = idSchema.safeParse(resolveId(req, params));
   if (!idParsed.success) {
     return zodErrorResponse(idParsed.error);
   }
@@ -51,13 +57,13 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: RouteParams) {
-  const auth = requireAdmin(_req);
+export async function DELETE(req: NextRequest, { params }: RouteParams) {
+  const auth = requireAdmin(req);
   if ("error" in auth) {
     return auth.forbidden ? forbiddenResponse() : unauthorizedResponse();
   }
 
-  const idParsed = idSchema.safeParse(params.id);
+  const idParsed = idSchema.safeParse(resolveId(req, params));
   if (!idParsed.success) {
     return zodErrorResponse(idParsed.error);
   }
