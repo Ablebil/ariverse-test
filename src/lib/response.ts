@@ -39,19 +39,19 @@ export function errorResponse(
 }
 
 export function unauthorizedResponse(
-  message: string = "Unauthorized"
+  message: string = "Tidak terautentikasi."
 ): NextResponse<ErrorResponseBody> {
   return errorResponse(message, 401);
 }
 
 export function forbiddenResponse(
-  message: string = "Forbidden"
+  message: string = "Anda tidak memiliki akses."
 ): NextResponse<ErrorResponseBody> {
   return errorResponse(message, 403);
 }
 
 export function notFoundResponse(
-  message: string = "Resource not found"
+  message: string = "Data tidak ditemukan."
 ): NextResponse<ErrorResponseBody> {
   return errorResponse(message, 404);
 }
@@ -63,7 +63,7 @@ export function conflictResponse(
 }
 
 export function tooManyRequestsResponse(
-  message: string = "Too many requests. Please try again later."
+  message: string = "Terlalu banyak permintaan. Silakan coba lagi nanti."
 ): NextResponse<ErrorResponseBody> {
   return errorResponse(message, 429);
 }
