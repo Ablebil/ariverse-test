@@ -165,3 +165,12 @@ export async function refresh(rawToken: string | undefined) {
     refreshTokenExpiresAt: nextRefreshTokenExpiresAt,
   };
 }
+
+export async function logout(rawToken: string | undefined) {
+  if (!rawToken) {
+    return;
+  }
+
+  const tokenHash = hashRefreshToken(rawToken);
+  await userRepository.revokeRefreshToken(tokenHash);
+}
