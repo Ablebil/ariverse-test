@@ -38,12 +38,12 @@ Platform katalog game berbasis web untuk gamer Indonesia. User dapat menjelajahi
 
    Isi `.env` dengan nilai yang sesuai:
 
-   | Variabel | Contoh | Keterangan |
-   |---|---|---|
-   | `DATABASE_URL` | `postgresql://user:pass@localhost:5432/gamevault` | Connection string PostgreSQL |
-   | `JWT_ACCESS_SECRET` | *(random string panjang)* | Secret untuk signing access token |
-   | `JWT_ACCESS_EXPIRES_IN` | `15m` | Masa berlaku access token |
-   | `REFRESH_TOKEN_EXPIRES_DAYS` | `7` | Masa berlaku refresh token (hari) |
+   | Variabel                     | Contoh                                            | Keterangan                        |
+   | ---------------------------- | ------------------------------------------------- | --------------------------------- |
+   | `DATABASE_URL`               | `postgresql://user:pass@localhost:5432/gamevault` | Connection string PostgreSQL      |
+   | `JWT_ACCESS_SECRET`          | _(random string panjang)_                         | Secret untuk signing access token |
+   | `JWT_ACCESS_EXPIRES_IN`      | `15m`                                             | Masa berlaku access token         |
+   | `REFRESH_TOKEN_EXPIRES_DAYS` | `7`                                               | Masa berlaku refresh token (hari) |
 
 3. **Install dependencies**
 
@@ -67,10 +67,10 @@ Platform katalog game berbasis web untuk gamer Indonesia. User dapat menjelajahi
 
    Kredensial admin setelah seed:
 
-   | Field | Value |
-   |---|---|
-   | Email | `admin@gamevault.com` |
-   | Password | `admin123456` |
+   | Field    | Value                 |
+   | -------- | --------------------- |
+   | Email    | `admin@gamevault.com` |
+   | Password | `admin123456`         |
 
 6. **Jalankan development server**
 
@@ -80,7 +80,7 @@ Platform katalog game berbasis web untuk gamer Indonesia. User dapat menjelajahi
 
    Aplikasi dapat diakses di `http://localhost:3000`.
 
-7. ***(Opsional)* Jalankan Swagger UI**
+7. **_(Opsional)_ Jalankan Swagger UI**
 
    ```bash
    docker compose up -d
@@ -92,20 +92,20 @@ Platform katalog game berbasis web untuk gamer Indonesia. User dapat menjelajahi
 
 ## Tech Stack
 
-| Kategori | Teknologi | Versi |
-|---|---|---|
-| Framework | Next.js (App Router) | 16.2.6 |
-| Runtime | React | 19.2.4 |
-| Database | PostgreSQL | — |
-| ORM | Prisma | ^7.8.0 |
-| Validasi | Zod | ^4.4.3 |
-| HTTP Client | Axios | ^1.16.1 |
-| Server State | TanStack Query | ^5.100.10 |
-| Client State | Zustand | ^5.0.13 |
-| Styling | Tailwind CSS + shadcn/ui | ^4 |
-| Language | TypeScript | ^5 |
-| API Docs | OpenAPI 3.1 + Swagger UI | — |
-| CI | GitHub Actions | — |
+| Kategori     | Teknologi                | Versi     |
+| ------------ | ------------------------ | --------- |
+| Framework    | Next.js (App Router)     | 16.2.6    |
+| Runtime      | React                    | 19.2.4    |
+| Database     | PostgreSQL               | —         |
+| ORM          | Prisma                   | ^7.8.0    |
+| Validasi     | Zod                      | ^4.4.3    |
+| HTTP Client  | Axios                    | ^1.16.1   |
+| Server State | TanStack Query           | ^5.100.10 |
+| Client State | Zustand                  | ^5.0.13   |
+| Styling      | Tailwind CSS + shadcn/ui | ^4        |
+| Language     | TypeScript               | ^5        |
+| API Docs     | OpenAPI 3.1 + Swagger UI | —         |
+| CI           | GitHub Actions           | —         |
 
 ### Alasan Pemilihan
 
