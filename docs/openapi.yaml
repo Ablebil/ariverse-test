@@ -1,0 +1,1274 @@
+openapi: 3.1.0
+
+info:
+  title: GameVault API
+  description: API documentation for GameVault
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+tags:
+  - name: Auth
+    description: Authentication & session management
+  - name: Games
+    description: Game catalog
+  - name: Genres
+    description: Genre master data
+  - name: Platforms
+    description: Platform master data
+  - name: Wishlist
+    description: User wishlist
+
+paths:
+  # auth module
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserObject"
+              example:
+                status: success
+                message: Registration successful
+                data:
+                  id: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                  name: John Doe
+                  email: john@example.com
+                  role: user
+                  createdAt: "2025-05-14T10:00:00Z"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                status: error
+                message: Email already registered
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              example:
+                status: error
+                message: Data yang dikirim tidak valid.
+                errors:
+                  email: ["Email harus diisi."]
+                  password: ["Password minimal 8 karakter."]
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and obtain access token
+      description: >
+        Returns an access token in the response body.
+        A `refreshToken` is set as an `httpOnly` cookie automatically.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: httpOnly refresh token cookie
+              schema:
+                type: string
+                example: refreshToken=<token>; HttpOnly; Path=/api/v1/auth/refresh; SameSite=Strict
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/LoginData"
+              example:
+                status: success
+                message: Login successful
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    id: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                    name: John Doe
+                    email: john@example.com
+                    role: user
+                    createdAt: "2025-05-14T10:00:00Z"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                status: error
+                message: Invalid email or password
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "429":
+          description: Too many login attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                status: error
+                message: Too many login attempts. Please try again later.
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and revoke refresh token
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                status: success
+                message: Logout successful
+                data: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh token and get new access token
+      description: >
+        Reads the `refreshToken` httpOnly cookie.
+        Returns a new access token and rotates the refresh token cookie.
+      responses:
+        "200":
+          description: Token refreshed successfully
+          headers:
+            Set-Cookie:
+              description: New rotated httpOnly refresh token cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+              example:
+                status: success
+                message: Token refreshed successfully
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "401":
+          description: Refresh token missing, invalid, or revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                status: error
+                message: Invalid or expired refresh token
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserObject"
+              example:
+                status: success
+                message: User retrieved successfully
+                data:
+                  id: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                  name: John Doe
+                  email: john@example.com
+                  role: user
+                  createdAt: "2025-05-14T10:00:00Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # games module
+  /games:
+    get:
+      tags: [Games]
+      summary: List games with search, filter, sort, and pagination
+      parameters:
+        - name: search
+          in: query
+          description: Filter by title (case-insensitive)
+          schema:
+            type: string
+          example: elden
+        - name: genres
+          in: query
+          description: Filter by one or more genres (multi-value)
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: [RPG, Action]
+        - name: platforms
+          in: query
+          description: Filter by one or more platforms (multi-value)
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: [PC, "PlayStation 5"]
+        - name: sort
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum:
+              - rating_desc
+              - rating_asc
+              - newest
+              - oldest
+              - price_asc
+              - price_desc
+          example: rating_desc
+        - name: featured
+          in: query
+          description: Filter featured games only
+          schema:
+            type: boolean
+          example: true
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 48
+            default: 12
+      responses:
+        "200":
+          description: Paginated list of games
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          games:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/GameCard"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+              example:
+                status: success
+                message: Games retrieved successfully
+                data:
+                  games:
+                    - id: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                      title: Elden Ring
+                      slug: elden-ring
+                      coverImage: https://picsum.photos/seed/eldenring/400/600
+                      description: An action RPG set in the Lands Between.
+                      genres: [Action, RPG]
+                      platforms: [PC, PlayStation 5]
+                      developer: FromSoftware
+                      publisher: Bandai Namco
+                      releaseDate: "2022-02-25"
+                      rating: "9.5"
+                      price: "0.00"
+                      featured: true
+                  pagination:
+                    total: 30
+                    page: 1
+                    limit: 12
+                    totalPages: 3
+
+    post:
+      tags: [Games]
+      summary: Create a new game (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameRequest"
+      responses:
+        "201":
+          description: Game created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/GameDetail"
+              example:
+                status: success
+                message: Game created successfully
+                data:
+                  id: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                  title: Elden Ring
+                  slug: elden-ring
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /games/{slug}:
+    get:
+      tags: [Games]
+      summary: Get game detail by slug
+      parameters:
+        - $ref: "#/components/parameters/SlugParam"
+      responses:
+        "200":
+          description: Game detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/GameDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      tags: [Games]
+      summary: Update a game (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlugParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameRequest"
+      responses:
+        "200":
+          description: Game updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/GameDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+    delete:
+      tags: [Games]
+      summary: Delete a game (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlugParam"
+      responses:
+        "200":
+          description: Game deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                status: success
+                message: Game deleted successfully
+                data: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # genres module
+  /genres:
+    get:
+      tags: [Genres]
+      summary: List all genres
+      responses:
+        "200":
+          description: List of genres
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/GenreObject"
+              example:
+                status: success
+                message: Genres retrieved successfully
+                data:
+                  - id: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                    name: RPG
+                    slug: rpg
+
+    post:
+      tags: [Genres]
+      summary: Create a new genre (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenreRequest"
+      responses:
+        "201":
+          description: Genre created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/GenreObject"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Genre already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                status: error
+                message: Genre already exists
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /genres/{id}:
+    put:
+      tags: [Genres]
+      summary: Update a genre (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenreRequest"
+      responses:
+        "200":
+          description: Genre updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/GenreObject"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+    delete:
+      tags: [Genres]
+      summary: Delete a genre (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Genre deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                status: success
+                message: Genre deleted successfully
+                data: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # platforms module
+  /platforms:
+    get:
+      tags: [Platforms]
+      summary: List all platforms
+      responses:
+        "200":
+          description: List of platforms
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/PlatformObject"
+              example:
+                status: success
+                message: Platforms retrieved successfully
+                data:
+                  - id: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                    name: PC
+                    slug: pc
+
+    post:
+      tags: [Platforms]
+      summary: Create a new platform (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatformRequest"
+      responses:
+        "201":
+          description: Platform created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PlatformObject"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Platform already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                status: error
+                message: Platform already exists
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /platforms/{id}:
+    put:
+      tags: [Platforms]
+      summary: Update a platform (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatformRequest"
+      responses:
+        "200":
+          description: Platform updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PlatformObject"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+    delete:
+      tags: [Platforms]
+      summary: Delete a platform (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Platform deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                status: success
+                message: Platform deleted successfully
+                data: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # wishlist module
+  /wishlist:
+    get:
+      tags: [Wishlist]
+      summary: Get current user wishlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 48
+            default: 12
+      responses:
+        "200":
+          description: User wishlist
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          games:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/GameCard"
+                          pagination:
+                            $ref: "#/components/schemas/Pagination"
+              example:
+                status: success
+                message: Wishlist retrieved successfully
+                data:
+                  games: []
+                  pagination:
+                    total: 0
+                    page: 1
+                    limit: 12
+                    totalPages: 0
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /wishlist/merge:
+    post:
+      tags: [Wishlist]
+      summary: Merge guest wishlist (localStorage) into authenticated user wishlist
+      description: >
+        Called right after login. Accepts an array of gameIds from localStorage
+        and adds them to the user wishlist (duplicates are ignored).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gameIds]
+              properties:
+                gameIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+              example:
+                gameIds:
+                  - 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+                  - 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1c
+      responses:
+        "200":
+          description: Wishlist merged successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          merged:
+                            type: integer
+                            description: Number of games successfully merged
+              example:
+                status: success
+                message: Wishlist merged successfully
+                data:
+                  merged: 2
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /wishlist/{gameId}:
+    post:
+      tags: [Wishlist]
+      summary: Add a game to wishlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameIdParam"
+      responses:
+        "201":
+          description: Game added to wishlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                status: success
+                message: Game added to wishlist
+                data: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Game already in wishlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                status: error
+                message: Game already in wishlist
+
+    delete:
+      tags: [Wishlist]
+      summary: Remove a game from wishlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/GameIdParam"
+      responses:
+        "200":
+          description: Game removed from wishlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                status: success
+                message: Game removed from wishlist
+                data: null
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    SlugParam:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+      example: elden-ring
+
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+
+    GameIdParam:
+      name: gameId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      example: 01932b2a-7c3d-7e4f-8a5b-6c7d8e9f0a1b
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid access token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            status: error
+            message: Unauthorized
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            status: error
+            message: Forbidden
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            status: error
+            message: Resource not found
+
+  schemas:
+    # base responses
+    SuccessResponse:
+      type: object
+      required: [status, message, data]
+      properties:
+        status:
+          type: string
+          enum: [success]
+          example: success
+        message:
+          type: string
+          example: Operation successful
+        data:
+          type: [object, "null"]
+
+    ErrorResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status:
+          type: string
+          enum: [error]
+          example: error
+        message:
+          type: string
+          example: Terjadi kesalahan.
+
+    ValidationErrorResponse:
+      type: object
+      required: [status, message, errors]
+      properties:
+        status:
+          type: string
+          enum: [error]
+          example: error
+        message:
+          type: string
+          example: Data yang dikirim tidak valid.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email: ["Email harus diisi."]
+            password: ["Password minimal 8 karakter."]
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 30
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 12
+        totalPages:
+          type: integer
+          example: 3
+
+    # auth
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          minLength: 8
+          example: secretpassword
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          example: secretpassword
+
+    UserObject:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+          format: date-time
+
+    LoginData:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserObject"
+
+    # games
+    GameCard:
+      type: object
+      description: Lightweight game object for list/card views
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        coverImage:
+          type: string
+          format: uri
+        description:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        platforms:
+          type: array
+          items:
+            type: string
+        developer:
+          type: string
+        publisher:
+          type: string
+        releaseDate:
+          type: string
+          format: date
+        rating:
+          type: string
+          description: Decimal string (0.0 – 10.0)
+          example: "9.5"
+        price:
+          type: string
+          description: Decimal string in IDR (0.00 = free)
+          example: "150000.00"
+        featured:
+          type: boolean
+
+    GameDetail:
+      allOf:
+        - $ref: "#/components/schemas/GameCard"
+        - type: object
+          properties:
+            screenshots:
+              type: array
+              items:
+                type: string
+                format: uri
+              minItems: 3
+            longDescription:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    GameRequest:
+      type: object
+      required:
+        - title
+        - slug
+        - coverImage
+        - screenshots
+        - description
+        - longDescription
+        - genres
+        - platforms
+        - developer
+        - publisher
+        - releaseDate
+        - rating
+      properties:
+        title:
+          type: string
+          example: Elden Ring
+        slug:
+          type: string
+          example: elden-ring
+        coverImage:
+          type: string
+          format: uri
+          example: https://picsum.photos/seed/eldenring/400/600
+        screenshots:
+          type: array
+          items:
+            type: string
+            format: uri
+          minItems: 3
+        description:
+          type: string
+        longDescription:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Array of genre IDs
+        platforms:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Array of platform IDs
+        developer:
+          type: string
+          example: FromSoftware
+        publisher:
+          type: string
+          example: Bandai Namco
+        releaseDate:
+          type: string
+          format: date
+          example: "2022-02-25"
+        rating:
+          type: number
+          minimum: 0
+          maximum: 10
+          example: 9.5
+        price:
+          type: number
+          minimum: 0
+          default: 0
+          example: 150000
+        tags:
+          type: array
+          items:
+            type: string
+          example: [soulslike, open-world, fantasy]
+        featured:
+          type: boolean
+          default: false
+
+    # genres
+    GenreObject:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: RPG
+        slug:
+          type: string
+          example: rpg
+
+    GenreRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: RPG
+
+    # platforms
+    PlatformObject:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: PC
+        slug:
+          type: string
+          example: pc
+
+    PlatformRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          example: PC
